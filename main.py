@@ -3,29 +3,35 @@
 #
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 import sys
 import paho.mqtt.client as mqtt
 
 logger = logging.getLogger('check-power')
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+TIMEZONE_IOT_OFFSET_HOURS = 1  # evita di cambiare il timezone ad ogni sensore della rete
+EXPIRE_SEC = 45
 
 # measure
 TOPIC_GR_FRIGO = "tele/tasmota_6835DF/SENSOR"
 reading_watt_frigo = 0
-time_watt_frigo = None
+expire_frigo_sec = EXPIRE_SEC
+time_watt_frigo = datetime.now()
 TOPIC_GR_PIASTRA = "tele/tasmota_3D5CA8/SENSOR"
 reading_watt_piastra = 0
-time_watt_piastra = None
+expire_piastra_sec = EXPIRE_SEC
+time_watt_piastra = datetime.now()
 TOPIC_GR_MICROWAV = "tele/tasmota_67EAC1/SENSOR"
 reading_watt_microwav = 0
-time_watt_microwav = None
+expire_microwav_sec = EXPIRE_SEC
+time_watt_microwav = datetime.now()
 TOPIC_GR_BOILER = "tele/tasmota_67E683/SENSOR"
 reading_watt_boiler = 0
-time_watt_boiler = None
+expire_boiler_sec = EXPIRE_SEC
+time_watt_boiler = datetime.now()
 # totals
 total_watt_last = 0
 total_watt = 0
@@ -55,7 +61,7 @@ def on_message(client, userdata, msg):
 
     value = json.loads(msg.payload)
     watt = value["ENERGY"]["Power"]
-    t = datetime.strptime(value["Time"], TIME_FORMAT)
+    t = datetime.strptime(value["Time"], TIME_FORMAT) + timedelta(hours=TIMEZONE_IOT_OFFSET_HOURS)
     if msg.topic == TOPIC_GR_FRIGO:
         reading_watt_frigo = watt
         time_watt_frigo = t
@@ -72,11 +78,24 @@ def on_message(client, userdata, msg):
         reading_watt_boiler = watt
         time_watt_boiler = t
         logger.debug("boiler W {:d} {}".format(reading_watt_boiler, time_watt_boiler))
+    # scadenza valori
+    if (datetime.now() - time_watt_frigo).total_seconds() > EXPIRE_SEC:
+        time_watt_frigo = datetime.now()
+        reading_watt_frigo = 0
+    if (datetime.now() - time_watt_piastra).total_seconds() > EXPIRE_SEC:
+        time_watt_piastra = datetime.now()
+        reading_watt_piastra = 0
+    if (datetime.now() - time_watt_microwav).total_seconds() > EXPIRE_SEC:
+        time_watt_microwav = datetime.now()
+        reading_watt_microwav = 0
+    if (datetime.now() - time_watt_boiler).total_seconds() > EXPIRE_SEC:
+        time_watt_boiler = datetime.now()
+        reading_watt_boiler = 0
+    # calcolo
     total_watt = reading_watt_frigo + reading_watt_piastra + reading_watt_microwav + reading_watt_boiler
-    logger.info("total  W {:d}".format(total_watt))
-    total_watt_var = round(abs(total_watt_last - total_watt) / TOTAL_WATT_MAX * 100.0, 1)
+    total_watt_var = round(-(total_watt_last - total_watt) / TOTAL_WATT_MAX * 100.0, 1)
     # if total_watt_var > 200:
-    logger.info("total_watt_var  % {}".format(total_watt_var))
+    logger.info("total W {:d} var % {}".format(total_watt, total_watt_var))
     # update
     total_watt_last = total_watt
 
