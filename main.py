@@ -94,8 +94,9 @@ def on_message(client, userdata, msg):
     # calcolo
     total_watt = reading_watt_frigo + reading_watt_piastra + reading_watt_microwav + reading_watt_boiler
     total_watt_var = round(-(total_watt_last - total_watt) / TOTAL_WATT_MAX * 100.0, 1)
+    total_watt_perc = round(total_watt / TOTAL_WATT_MAX * 100.0, 1)
     # if total_watt_var > 200:
-    logger.info("total W {:d} var % {}".format(total_watt, total_watt_var))
+    logger.info("total W {:d} var % {} load % {}".format(total_watt, total_watt_var, total_watt_perc))
     # update
     total_watt_last = total_watt
 
