@@ -5,3 +5,5 @@ dependencies:
   - pip
   - pip:
       - paho-mqtt
+      - numpy
+      - ta-lib
