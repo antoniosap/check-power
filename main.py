@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 import logging
 import sys
 import paho.mqtt.client as mqtt
+import numpy as np
+import talib
 
 logger = logging.getLogger('check-power')
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -37,6 +39,9 @@ total_watt_last = 0
 total_watt = 0
 total_watt_var = 0      # variazione percentuale dall'ultima lettura
 TOTAL_WATT_MAX = 3000   # 3 kilowatt di contratto
+# filters
+power_watt_series = np.zeros(10)
+total_watt_last_ema = 0
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -57,7 +62,7 @@ def on_message(client, userdata, msg):
     logger.debug(msg.topic+" "+str(msg.payload))
     global reading_watt_frigo, reading_watt_piastra, reading_watt_microwav, reading_watt_boiler
     global time_watt_frigo, time_watt_piastra, time_watt_microwav, time_watt_boiler
-    global total_watt, total_watt_last, total_watt_var
+    global total_watt, total_watt_last, total_watt_var, power_watt_series, total_watt_last_ema
 
     value = json.loads(msg.payload)
     watt = value["ENERGY"]["Power"]
@@ -95,10 +100,19 @@ def on_message(client, userdata, msg):
     total_watt = reading_watt_frigo + reading_watt_piastra + reading_watt_microwav + reading_watt_boiler
     total_watt_var = round(-(total_watt_last - total_watt) / TOTAL_WATT_MAX * 100.0, 1)
     total_watt_perc = round(total_watt / TOTAL_WATT_MAX * 100.0, 1)
+    power_watt_series = np.delete(power_watt_series, 0)
+    power_watt_series = np.append(power_watt_series, total_watt)
+    # EMA = exponential moving average
+    # FIR filter
+    total_watt_ema = round(talib.EMA(power_watt_series, timeperiod=4)[10-1])
+    total_watt_var_ema = round(-(total_watt_last_ema - total_watt_ema) / TOTAL_WATT_MAX * 100.0, 1)
+
     # if total_watt_var > 200:
-    logger.info("total W {:d} var % {} load % {}".format(total_watt, total_watt_var, total_watt_perc))
+    logger.info("total W {:d} var % {} load % {} EMA4 W {} var EMA4 % {}"
+                .format(total_watt, total_watt_var, total_watt_perc, total_watt_ema, total_watt_var_ema))
     # update
     total_watt_last = total_watt
+    total_watt_last_ema = total_watt_ema
 
 
 client = mqtt.Client()
