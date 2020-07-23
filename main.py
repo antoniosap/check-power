@@ -1,5 +1,7 @@
 #
 #
+# MONITOR MQTT:
+# mosquitto_sub -h 192.168.147.1 -t ha/tts/google_translate_say
 #
 
 import json
@@ -16,6 +18,9 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s -
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 TIMEZONE_IOT_OFFSET_HOURS = 1  # evita di cambiare il timezone ad ogni sensore della rete
 EXPIRE_SEC = 45
+HA_CHROMECAST_ID = "media_player.entryway"
+HA_SERVICE = "ha/tts/google_translate_say"
+MESSAGE_EMA_LEVEL = 16
 
 # measure
 TOPIC_GR_FRIGO = "tele/tasmota_6835DF/SENSOR"
@@ -113,6 +118,16 @@ def on_message(client, userdata, msg):
     # update
     total_watt_last = total_watt
     total_watt_last_ema = total_watt_ema
+
+    msg = None
+    if total_watt_var_ema > MESSAGE_EMA_LEVEL:
+        msg = "la potenza sta salendo al {} percento".format(round(total_watt_perc))
+    if total_watt_var_ema < -MESSAGE_EMA_LEVEL:
+        msg = "la potenza sta scendendo al {} percento".format(round(total_watt_perc))
+    if msg is not None:
+        # tts @ home assistant
+        payload = {"entity_id": HA_CHROMECAST_ID, "language": 'it', "message": msg}
+        client.publish(HA_SERVICE, json.dumps(payload))
 
 
 client = mqtt.Client()
