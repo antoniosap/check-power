@@ -1,3 +1,8 @@
+#
+# info sites:
+# https://www.home-assistant.io/docs/automation/templating/
+#
+
 - alias: night lights on
   trigger:
     platform: sun
