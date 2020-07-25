@@ -1,0 +1,46 @@
+microwave_status:
+  name: microwave stat
+  entities:
+    - sensor.microwav_kwh_day
+    - sensor.microwav_kwh_tot
+    - sensor.microwav_v
+    - sensor.microwav_w
+    - sensor.microwav_a
+    - sensor.microwav_f
+
+gr_frigo_status:
+  name: gr.frigo
+  entities:
+    - sensor.gr_frigo_kwh_day
+    - sensor.gr_frigo_kwh_tot
+    - sensor.gr_frigo_v
+    - sensor.gr_frigo_w
+    - sensor.gr_frigo_a
+    - sensor.gr_frigo_f
+
+gr_piastra_status:
+  name: gr.piastra
+  entities:
+    - sensor.gr_piastra_kwh_day
+    - sensor.gr_piastra_kwh_tot
+    - sensor.gr_piastra_v
+    - sensor.gr_piastra_w
+    - sensor.gr_piastra_a
+    - sensor.gr_piastra_f
+
+boiler_status:
+  name: boiler
+  entities:
+    - sensor.boiler_kwh_day
+    - sensor.boiler_kwh_tot
+    - sensor.boiler_v
+    - sensor.boiler_w
+    - sensor.boiler_a
+    - sensor.boiler_f
+
+cong_status:
+  name: cong
+  entities:
+    - sensor.cong
+    - sensor.cong_2
+

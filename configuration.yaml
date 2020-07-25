@@ -1,0 +1,233 @@
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+# Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+# http:
+#   base_url: example.duckdns.org:8123
+
+# Text to speech
+tts:
+  platform: google_translate
+  language: 'it'
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+#
+#logger:
+#  default: debug
+#
+
+mqtt:
+  broker: 192.168.147.1
+
+sensor:
+  - platform: yr
+
+  - platform: mqtt
+    name: "cong"
+    state_topic: "tele/tasmota_31C686/SENSOR"
+    value_template: "{{ value_json['SI7021'].Temperature }}"
+    unit_of_measurement: "TC"
+    availability_topic: "tele/tasmota_31C686/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    device_class: temperature
+
+  - platform: mqtt
+    name: "cong"
+    state_topic: "tele/tasmota_31C686/SENSOR"
+    value_template: "{{ value_json['SI7021'].Humidity }}"
+    unit_of_measurement: "HR"
+    availability_topic: "tele/tasmota_31C686/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    device_class: humidity
+
+  - platform: mqtt
+    name: "gr.frigo kWh Day"
+    state_topic: "tele/tasmota_6835DF/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Today"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "gr.frigo kWh Tot"
+    state_topic: "tele/tasmota_6835DF/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Total"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "gr.frigo W"
+    state_topic: "tele/tasmota_6835DF/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Power"] }}'
+    unit_of_measurement: "W"
+  - platform: mqtt
+    name: "gr.frigo V"
+    state_topic: "tele/tasmota_6835DF/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Voltage"] }}'
+    unit_of_measurement: "V"
+  - platform: mqtt
+    name: "gr.frigo A"
+    state_topic: "tele/tasmota_6835DF/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Current"] }}'
+    unit_of_measurement: "A"
+  - platform: mqtt
+    name: "gr.frigo F"
+    state_topic: "tele/tasmota_6835DF/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Factor"] }}'
+    unit_of_measurement: "F"
+
+  - platform: mqtt
+    name: "gr.piastra kWh Day"
+    state_topic: "tele/tasmota_3D5CA8/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Today"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "gr.piastra kWh Tot"
+    state_topic: "tele/tasmota_3D5CA8/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Total"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "gr.piastra W"
+    state_topic: "tele/tasmota_3D5CA8/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Power"] }}'
+    unit_of_measurement: "W"
+  - platform: mqtt
+    name: "gr.piastra V"
+    state_topic: "tele/tasmota_3D5CA8/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Voltage"] }}'
+    unit_of_measurement: "V"
+  - platform: mqtt
+    name: "gr.piastra A"
+    state_topic: "tele/tasmota_3D5CA8/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Current"] }}'
+    unit_of_measurement: "A"
+  - platform: mqtt
+    name: "gr.piastra F"
+    state_topic: "tele/tasmota_3D5CA8/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Factor"] }}'
+    unit_of_measurement: "F"
+
+  - platform: mqtt
+    name: "microwav kWh Day"
+    state_topic: "tele/tasmota_67EAC1/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Today"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "microwav kWh Tot"
+    state_topic: "tele/tasmota_67EAC1/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Total"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "microwav W"
+    state_topic: "tele/tasmota_67EAC1/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Power"] }}'
+    unit_of_measurement: "W"
+  - platform: mqtt
+    name: "microwav V"
+    state_topic: "tele/tasmota_67EAC1/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Voltage"] }}'
+    unit_of_measurement: "V"
+  - platform: mqtt
+    name: "microwav A"
+    state_topic: "tele/tasmota_67EAC1/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Current"] }}'
+    unit_of_measurement: "A"
+  - platform: mqtt
+    name: "microwav F"
+    state_topic: "tele/tasmota_67EAC1/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Factor"] }}'
+    unit_of_measurement: "F"
+
+#
+# boiler
+#
+  - platform: mqtt
+    name: "boiler kWh Day"
+    state_topic: "tele/tasmota_67E683/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Today"] }}'
+    unit_of_measurement: "kWh"
+    expire_after: 45
+    availability_topic: "tele/tasmota_67E683/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+
+  - platform: mqtt
+    name: "boiler kWh Tot"
+    state_topic: "tele/tasmota_67E683/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Total"] }}'
+    unit_of_measurement: "kWh"
+    expire_after: 45
+    availability_topic: "tele/tasmota_67E683/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+
+  - platform: mqtt
+    name: "boiler W"
+    state_topic: "tele/tasmota_67E683/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Power"] }}'
+    unit_of_measurement: "W"
+    expire_after: 45
+    availability_topic: "tele/tasmota_67E683/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+
+  - platform: mqtt
+    name: "boiler V"
+    state_topic: "tele/tasmota_67E683/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Voltage"] }}'
+    unit_of_measurement: "V"
+    expire_after: 45
+    availability_topic: "tele/tasmota_67E683/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+
+  - platform: mqtt
+    name: "boiler A"
+    state_topic: "tele/tasmota_67E683/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Current"] }}'
+    unit_of_measurement: "A"
+    expire_after: 45
+    availability_topic: "tele/tasmota_67E683/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+
+  - platform: mqtt
+    name: "boiler F"
+    state_topic: "tele/tasmota_67E683/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Factor"] }}'
+    unit_of_measurement: "F"
+    expire_after: 45
+    availability_topic: "tele/tasmota_67E683/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+
+#
+# calculated sensors
+#
+  - platform: template
+    sensors:
+      total_watt:
+        friendly_name: "total W"
+        unit_of_measurement: "W"
+        value_template: >
+             {{ (states('sensor.microwav_w') | float + 
+                 states('sensor.boiler_w') | float +
+                 states('sensor.gr_frigo_w') | float +
+                 states('sensor.gr_piastra_w') | float) | 
+              round | int }}
+
+
+switch:
+  - platform: mqtt
+    name: "lampada lettura"
+    state_topic: "stat/tasmota_BD799F/RESULT"  
+    value_template: "{{ value_json.POWER }}"
+    command_topic: "cmnd/tasmota_BD799F/POWER"
+    payload_on: "ON"
+    payload_off: "OFF"
+    availability_topic: "tele/tasmota_BD799F/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    qos: 1
+    retain: false

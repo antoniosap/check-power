@@ -10,3 +10,35 @@
       entity_id: "{{ value_json['speech'].entity_id }}"
 
 mosquitto_pub -h 192.168.147.1 -t ha/tts/google_translate_say -m '{"time": "2020-07-25T16:41:52", "speech": {"entity_id": "media_player.entryway", "language": "it", "message": "la potenza sta salendo al 52 percento"}}'
+
+
+- id: '1595670571853'
+  alias: tts-power
+  description: ''
+  trigger:
+  - platform: mqtt
+    topic: ha/tts/google_translate_say
+  condition: []
+  action:
+  - data:
+      entity_id: media_player.entryway
+      language: it
+      message: "{{ trigger.payload }}"
+    service: tts.google_translate_say
+
+
+
+- id: '1595670571853'
+  alias: tts-power
+  description: ''
+  trigger:
+  - platform: mqtt
+    topic: ha/tts/google_translate_say
+  condition: []
+  action:
+    - service: tts.google_translate_say
+      data_template:
+        entity_id: media_player.entryway
+        message: "{{ trigger.payload }}"
+    
+

@@ -1,0 +1,31 @@
+- alias: night lights on
+  trigger:
+    platform: sun
+    event: sunset
+  action:
+  - service: switch.turn_on
+    entity_id: switch.lampada_lettura
+  id: 7e66e6c032c645d2806966d455c12965
+
+- alias: night lights off
+  trigger:
+    platform: sun
+    event: sunrise
+  action:
+  - service: switch.turn_off
+    entity_id: switch.lampada_lettura
+  id: b4a2b39e7fc845c09288da8393926bdc
+
+- id: '1595670571853'
+  alias: tts-power
+  description: ''
+  trigger:
+  - platform: mqtt
+    topic: ha/tts/google_translate_say
+  condition: []
+  action:
+    - service: tts.google_translate_say
+      data_template:
+        entity_id: "{{ trigger.payload_json['speech']['entity_id'] }}"
+        language: "{{ trigger.payload_json['speech']['language'] }}"
+        message: "{{ trigger.payload_json['speech']['message'] }}"
