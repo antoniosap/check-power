@@ -69,6 +69,7 @@ def on_message(client, userdata, msg):
     global time_watt_frigo, time_watt_piastra, time_watt_microwav, time_watt_boiler
     global total_watt, total_watt_last, total_watt_var, power_watt_series, total_watt_last_ema
 
+    now = datetime.now()
     value = json.loads(msg.payload)
     watt = value["ENERGY"]["Power"]
     t = datetime.strptime(value["Time"], TIME_FORMAT) + timedelta(hours=TIMEZONE_IOT_OFFSET_HOURS)
@@ -126,7 +127,7 @@ def on_message(client, userdata, msg):
         msg = "la potenza sta scendendo al {} percento".format(round(total_watt_perc))
     if msg is not None:
         # tts @ home assistant
-        payload = {"entity_id": HA_CHROMECAST_ID, "language": 'it', "message": msg}
+        payload = {"time": now.strftime(TIME_FORMAT), "speech": {"entity_id": HA_CHROMECAST_ID, "language": 'it', "message": msg}}
         client.publish(HA_SERVICE, json.dumps(payload))
 
 
