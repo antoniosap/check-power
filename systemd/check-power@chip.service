@@ -1,0 +1,11 @@
+[Unit]
+Description=check-power-ha
+After=network-online.target
+
+[Service]
+Type=simple
+User=%i
+ExecStart=/home/chip/workspace/check-power-start.sh
+
+[Install]
+WantedBy=multi-user.target
