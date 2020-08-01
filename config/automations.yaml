@@ -1,8 +1,3 @@
-#
-# info sites:
-# https://www.home-assistant.io/docs/automation/templating/
-#
-
 - alias: night lights on
   trigger:
     platform: sun
@@ -34,3 +29,4 @@
         entity_id: "{{ trigger.payload_json['speech']['entity_id'] }}"
         language: "{{ trigger.payload_json['speech']['language'] }}"
         message: "{{ trigger.payload_json['speech']['message'] }}"
+

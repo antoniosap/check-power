@@ -231,3 +231,32 @@ switch:
     payload_not_available: "Offline"
     qos: 1
     retain: false
+
+  - platform: mqtt
+    name: "gruppo piastra"
+    # attenzione qui e' STATE invece che RESULT
+    # forse dipende da setoption19 oppure da setoption59
+    state_topic: "tele/tasmota_3D5CA8/STATE"
+    value_template: "{{ value_json.POWER }}"
+    command_topic: "cmnd/tasmota_3D5CA8/POWER"
+    payload_on: "ON"
+    payload_off: "OFF"
+    availability_topic: "tele/tasmota_3D5CA8/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    qos: 1
+    retain: false
+
+  - platform: mqtt
+    name: "boiler"
+    state_topic: "stat/tasmota_67E683/RESULT"
+    value_template: "{{ value_json.POWER }}"
+    command_topic: "cmnd/tasmota_67E683/POWER"
+    payload_on: "ON"
+    payload_off: "OFF"
+    availability_topic: "tele/tasmota_67E683/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    qos: 1
+    retain: false
+
