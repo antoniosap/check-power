@@ -47,6 +47,16 @@ sensor:
     device_class: humidity
 
   - platform: mqtt
+    name: "boiler water output"
+    state_topic: "tele/tasmota_00C101/SENSOR"
+    value_template: "{{ value_json['DS18B20'].Temperature }}"
+    unit_of_measurement: "TC"
+    availability_topic: "tele/tasmota_00C101/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    device_class: temperature
+
+  - platform: mqtt
     name: "gr.frigo kWh Day"
     state_topic: "tele/tasmota_6835DF/SENSOR"
     value_template: '{{ value_json["ENERGY"]["Today"] }}'
@@ -260,3 +270,12 @@ switch:
     qos: 1
     retain: false
 
+#
+# telegram
+#
+
+telegram_bot:
+  - platform: polling
+    api_key: !secret telegram_token
+    allowed_chat_ids:
+      - !secret telegram_chat_id
