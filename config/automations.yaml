@@ -30,3 +30,29 @@
         language: "{{ trigger.payload_json['speech']['language'] }}"
         message: "{{ trigger.payload_json['speech']['message'] }}"
 
+- id: "boiler_timer_on_20200815"
+  alias: boiler timer on
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: switch.boiler
+    to: 'on'
+    for:
+      minutes: 10
+  action:
+    - service: switch.turn_off
+      entity_id: switch.boiler
+
+- id: "cong_temp_alarm_20200816"
+  alias: cong temp alarm
+  description: 'controlla se la cella frigorifera non raffredda'
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.cong
+      above: -9.0
+  action:
+    - service: tts.google_translate_say
+      data_template:
+        entity_id: media_player.entryway
+        language: "it"
+        message: "Attenzione ! il congelatore è spento ed è in allarme"
