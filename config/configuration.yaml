@@ -279,3 +279,19 @@ telegram_bot:
     api_key: !secret telegram_token
     allowed_chat_ids:
       - !secret telegram_chat_id
+
+#
+# timers
+#
+
+#
+# proximity
+#
+
+proximity:
+  home:
+    devices:
+      - device_tracker.sm_a405fn
+    tolerance: 50
+    unit_of_measurement: m
+
