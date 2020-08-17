@@ -56,3 +56,13 @@
         entity_id: media_player.entryway
         language: "it"
         message: "Attenzione ! il congelatore è spento ed è in allarme"
+
+- id: "morning_boiler_20200817"
+  alias: boiler on at morning
+  description: 'accende il boiler al mattino presto'
+  trigger:
+    - platform: time
+      at: "07:00:00"
+  action:
+    - service: switch.turn_on
+      entity_id: switch.boiler
