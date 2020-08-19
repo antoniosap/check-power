@@ -66,3 +66,22 @@
   action:
     - service: switch.turn_on
       entity_id: switch.boiler
+
+
+- id: '1597819488092'
+  alias: ventola troppo caldo
+  description: ''
+  trigger:
+  - entity_id: person.antonio
+    platform: state
+    to: home
+  condition:
+  - above: '28'
+    condition: numeric_state
+    entity_id: weather.casatorino
+    value_template: state.attributes.temperature
+  action:
+  - device_id: ffa46906ef6e450fbfe8ec6d4125d97c
+    domain: switch
+    entity_id: switch.tasmota_tasmota
+    type: turn_on

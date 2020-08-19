@@ -22,6 +22,7 @@ scene: !include scenes.yaml
 
 mqtt:
   broker: 192.168.147.1
+  discovery: true
 
 sensor:
   - platform: yr
