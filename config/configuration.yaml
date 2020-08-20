@@ -271,6 +271,32 @@ switch:
     qos: 1
     retain: false
 
+  - platform: mqtt
+    name: "vent"
+    state_topic: "stat/tasmota_6863EE/RESULT"
+    value_template: "{{ value_json.POWER }}"
+    command_topic: "cmnd/tasmota_6863EE/POWER"
+    payload_on: "ON"
+    payload_off: "OFF"
+    availability_topic: "tele/tasmota_6863EE/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    qos: 1
+    retain: false
+
+  - platform: mqtt
+    name: "corridoio"
+    state_topic: "stat/tasmota_67DF99/RESULT"
+    value_template: "{{ value_json.POWER }}"
+    command_topic: "cmnd/tasmota_67DF99/POWER"
+    payload_on: "ON"
+    payload_off: "OFF"
+    availability_topic: "tele/tasmota_67DF99/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    qos: 1
+    retain: false
+
 #
 # telegram
 #

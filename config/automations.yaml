@@ -85,3 +85,18 @@
     domain: switch
     entity_id: switch.tasmota_tasmota
     type: turn_on
+
+- id: boiler_proximity_20200819
+  alias: boiler proximity
+  description: ''
+  trigger:
+  - entity_id: proximity.home
+    platform: numeric_state
+    below: '1300'
+  condition:
+  - condition: template
+    value_template: '{{ states.proximity.home.attributes.dir_of_travel == "towards" }}'
+  action:
+  - data: {}
+    entity_id: switch.boiler
+    service: switch.turn_on
