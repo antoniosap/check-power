@@ -100,3 +100,6 @@
   - data: {}
     entity_id: switch.boiler
     service: switch.turn_on
+  - data:
+      message: stai arrivando a casa, accendo il boiler
+    service: telegram_bot.send_message
