@@ -103,3 +103,20 @@
   - data:
       message: stai arrivando a casa, accendo il boiler
     service: telegram_bot.send_message
+
+- id: away_home_off_20200822
+  alias: away home off
+  description: ''
+  trigger:
+  - entity_id: person.antonio
+    from: home
+    platform: state
+    to: not_home
+  condition: []
+  action:
+  - data: {}
+    entity_id: switch.vent
+    service: switch.turn_off
+  - data: {}
+    entity_id: switch.corridoio
+    service: switch.turn_off
