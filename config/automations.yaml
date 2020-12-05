@@ -34,40 +34,35 @@
   alias: boiler timer on
   description: ''
   trigger:
-  - platform: state
-    entity_id: switch.boiler
+  - entity_id: switch.boiler
+    for: 00:40:00
+    platform: state
     to: 'on'
-    for:
-      minutes: 10
   action:
-    - service: switch.turn_off
-      entity_id: switch.boiler
-
-- id: "cong_temp_alarm_20200816"
+  - entity_id: switch.boiler
+    service: switch.turn_off
+- id: cong_temp_alarm_20200816
   alias: cong temp alarm
-  description: 'controlla se la cella frigorifera non raffredda'
+  description: controlla se la cella frigorifera non raffredda
   trigger:
-    - platform: numeric_state
-      entity_id: sensor.cong
-      above: -9.0
+  - platform: numeric_state
+    entity_id: sensor.cong
+    above: -9.0
   action:
-    - service: tts.google_translate_say
-      data_template:
-        entity_id: media_player.entryway
-        language: "it"
-        message: "Attenzione ! il congelatore è spento ed è in allarme"
-
-- id: "morning_boiler_20200817"
+  - service: tts.google_translate_say
+    data_template:
+      entity_id: media_player.entryway
+      language: it
+      message: Attenzione ! il congelatore è spento ed è in allarme
+- id: morning_boiler_20200817
   alias: boiler on at morning
-  description: 'accende il boiler al mattino presto'
+  description: accende il boiler al mattino presto
   trigger:
-    - platform: time
-      at: "07:00:00"
+  - platform: time
+    at: 07:00:00
   action:
-    - service: switch.turn_on
-      entity_id: switch.boiler
-
-
+  - service: switch.turn_on
+    entity_id: switch.boiler
 - id: '1597819488092'
   alias: ventola troppo caldo
   description: ''
@@ -76,26 +71,24 @@
     platform: state
     to: home
   condition:
-  - above: '28'
+  - above: '27.3'
     condition: numeric_state
-    entity_id: weather.casatorino
-    value_template: state.attributes.temperature
+    entity_id: switch.termo_lab
   action:
-  - device_id: ffa46906ef6e450fbfe8ec6d4125d97c
-    domain: switch
-    entity_id: switch.tasmota_tasmota
-    type: turn_on
-
+  - data: {}
+    entity_id: switch.vent
+    service: switch.toggle
 - id: boiler_proximity_20200819
   alias: boiler proximity
   description: ''
   trigger:
-  - entity_id: proximity.home
+  - below: '1300'
+    entity_id: proximity.home
     platform: numeric_state
-    below: '1300'
   condition:
   - condition: template
-    value_template: '{{ states.proximity.home.attributes.dir_of_travel == "towards" }}'
+    value_template: '{{ states.proximity.home.attributes.dir_of_travel == "towards"
+      }}'
   action:
   - data: {}
     entity_id: switch.boiler
@@ -104,7 +97,7 @@
       message: stai arrivando a casa, accendo il boiler
     service: telegram_bot.send_message
 
-- id: away_home_off_20200822
+- id: '1598130003086'
   alias: away home off
   description: ''
   trigger:
@@ -119,4 +112,41 @@
     service: switch.turn_off
   - data: {}
     entity_id: switch.corridoio
+    service: switch.turn_off
+- id: away_home_on_20200824
+  alias: away home on
+  description: ''
+  trigger:
+  - below: '1000'
+    entity_id: proximity.home
+    platform: numeric_state
+  condition: []
+  action:
+  - data: {}
+    entity_id: switch.vent
+    service: switch.turn_on
+  - data: {}
+    entity_id: switch.corridoio
+    service: switch.turn_on
+- id: '1603984670728'
+  alias: luce cucina on
+  description: ''
+  trigger:
+  - at: 08:00:00
+    platform: time
+  condition: []
+  action:
+  - data: {}
+    entity_id: switch.vent
+    service: switch.turn_on
+- id: '1603984752481'
+  alias: luce cucina off
+  description: ''
+  trigger:
+  - at: '22:30:00'
+    platform: time
+  condition: []
+  action:
+  - data: {}
+    entity_id: switch.vent
     service: switch.turn_off

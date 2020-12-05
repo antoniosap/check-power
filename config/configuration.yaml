@@ -48,6 +48,46 @@ sensor:
     device_class: humidity
 
   - platform: mqtt
+    name: "termo lab"
+    state_topic: "tele/tasmota_00C4A9/SENSOR"
+    value_template: "{{ value_json['AM2301'].Temperature }}"
+    unit_of_measurement: "TC"
+    availability_topic: "tele/tasmota_00C4A9/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    device_class: temperature
+
+  - platform: mqtt
+    name: "termo lab"
+    state_topic: "tele/tasmota_00C4A9/SENSOR"
+    value_template: "{{ value_json['AM2301'].Humidity }}"
+    unit_of_measurement: "HR"
+    availability_topic: "tele/tasmota_00C4A9/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    device_class: humidity
+
+  - platform: mqtt
+    name: "termo cuc"
+    state_topic: "tele/tasmota_00C03B/SENSOR"
+    value_template: "{{ value_json['AM2301'].Temperature }}"
+    unit_of_measurement: "TC"
+    availability_topic: "tele/tasmota_00C03B/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    device_class: temperature
+
+  - platform: mqtt
+    name: "termo cuc"
+    state_topic: "tele/tasmota_00C03B/SENSOR"
+    value_template: "{{ value_json['AM2301'].Humidity }}"
+    unit_of_measurement: "HR"
+    availability_topic: "tele/tasmota_00C03B/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    device_class: humidity
+
+  - platform: mqtt
     name: "boiler water output"
     state_topic: "tele/tasmota_00C101/SENSOR"
     value_template: "{{ value_json['DS18B20'].Temperature }}"
@@ -297,6 +337,32 @@ switch:
     qos: 1
     retain: false
 
+  - platform: mqtt
+    name: "termo lab"
+    state_topic: "stat/tasmota_00C4A9/RESULT"
+    value_template: "{{ value_json.POWER }}"
+    command_topic: "cmnd/tasmota_00C4A9/POWER"
+    payload_on: "ON"
+    payload_off: "OFF"
+    availability_topic: "tele/tasmota_00C4A9/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    qos: 1
+    retain: false
+
+  - platform: mqtt
+    name: "termo cuc"
+    state_topic: "stat/tasmota_00C03B/RESULT"
+    value_template: "{{ value_json.POWER }}"
+    command_topic: "cmnd/tasmota_00C03B/POWER"
+    payload_on: "ON"
+    payload_off: "OFF"
+    availability_topic: "tele/tasmota_00C03B/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    qos: 1
+    retain: false
+
 #
 # telegram
 #
@@ -321,4 +387,5 @@ proximity:
       - device_tracker.sm_a405fn
     tolerance: 50
     unit_of_measurement: m
+
 
