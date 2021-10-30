@@ -4,8 +4,8 @@ After=network-online.target
 
 [Service]
 Type=simple
-User=%i
-ExecStart=/home/chip/workspace/ha-start.sh
+User=pi
+ExecStart=/home/pi/workspace/ha-start.sh
 
 [Install]
 WantedBy=multi-user.target

@@ -4,8 +4,8 @@ After=network-online.target
 
 [Service]
 Type=simple
-User=%i
-ExecStart=/home/chip/workspace/check-power-start.sh
+User=pi
+ExecStart=/home/pi/workspace/check-power-start.sh
 RemainAfterExit=no
 Restart=on-failure
 RestartSec=60s

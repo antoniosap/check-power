@@ -1,4 +1,7 @@
 cython
 paho-mqtt~=1.5.0
 numpy~=1.19.0
+# + sudo apt install libatlas-base-dev
+# + installare dai sources ta-lib
+# https://github.com/mrjbq7/ta-lib
 ta-lib
