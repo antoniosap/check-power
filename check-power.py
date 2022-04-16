@@ -39,6 +39,10 @@ TOPIC_GR_BOILER = "tele/tasmota_67E683/SENSOR"
 reading_watt_boiler = 0
 expire_boiler_sec = EXPIRE_SEC
 time_watt_boiler = datetime.now()
+TOPIC_PC_POWER = "tele/tasmota_9D1588/SENSOR"
+reading_watt_pc_power = 0
+expire_pc_power_sec = EXPIRE_SEC
+time_watt_pc_power = datetime.now()
 # totals
 total_watt_last = 0
 total_watt = 0
@@ -59,14 +63,15 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(TOPIC_GR_PIASTRA)  # gr.piastra
     client.subscribe(TOPIC_GR_MICROWAV)  # microwav
     client.subscribe(TOPIC_GR_BOILER)  # boiler
+    client.subscribe(TOPIC_PC_POWER)  # power PC meter
 
 
 # The callback for when a PUBLISH message is received from the server.
 # ATTENZIONE: l'intera procedura deve durare max 30 secondi
 def on_message(client, userdata, msg):
     logger.debug(msg.topic+" "+str(msg.payload))
-    global reading_watt_frigo, reading_watt_piastra, reading_watt_microwav, reading_watt_boiler
-    global time_watt_frigo, time_watt_piastra, time_watt_microwav, time_watt_boiler
+    global reading_watt_frigo, reading_watt_piastra, reading_watt_microwav, reading_watt_boiler, reading_watt_pc_power
+    global time_watt_frigo, time_watt_piastra, time_watt_microwav, time_watt_boiler, time_watt_pc_power
     global total_watt, total_watt_last, total_watt_var, power_watt_series, total_watt_last_ema
 
     now = datetime.now()
@@ -89,6 +94,10 @@ def on_message(client, userdata, msg):
         reading_watt_boiler = watt
         time_watt_boiler = t
         logger.debug("boiler W {:d} {}".format(reading_watt_boiler, time_watt_boiler))
+    elif msg.topic == TOPIC_PC_POWER:
+        reading_watt_pc_power = watt
+        time_watt_pc_power = t
+        logger.debug("pc power W {:d} {}".format(reading_watt_pc_power, time_watt_pc_power))
     # scadenza valori
     if (datetime.now() - time_watt_frigo).total_seconds() > EXPIRE_SEC:
         time_watt_frigo = datetime.now()
@@ -102,8 +111,11 @@ def on_message(client, userdata, msg):
     if (datetime.now() - time_watt_boiler).total_seconds() > EXPIRE_SEC:
         time_watt_boiler = datetime.now()
         reading_watt_boiler = 0
+    if (datetime.now() - time_watt_pc_power).total_seconds() > EXPIRE_SEC:
+        time_watt_pc_power = datetime.now()
+        reading_watt_pc_power = 0
     # calcolo
-    total_watt = reading_watt_frigo + reading_watt_piastra + reading_watt_microwav + reading_watt_boiler
+    total_watt = reading_watt_frigo + reading_watt_piastra + reading_watt_microwav + reading_watt_boiler + reading_watt_pc_power
     total_watt_var = round(-(total_watt_last - total_watt) / TOTAL_WATT_MAX * 100.0, 1)
     total_watt_perc = round(total_watt / TOTAL_WATT_MAX * 100.0, 1)
     power_watt_series = np.delete(power_watt_series, 0)
