@@ -1,7 +1,8 @@
 cython
-paho-mqtt~=1.5.0
-numpy~=1.19.0
+paho-mqtt~=1.6.1
+numpy~=1.22.3
 # + sudo apt install libatlas-base-dev
 # + installare dai sources ta-lib
 # https://github.com/mrjbq7/ta-lib
 ta-lib
+appdaemon~=4.2.1

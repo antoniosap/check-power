@@ -1,9 +1,11 @@
 # run: conda env create --file environment.yml
-name: check-power
+name: hassio
 dependencies:
-  - python==3.7.7
+  - python==3.9.12
   - pip
   - pip:
       - paho-mqtt
       - numpy
       - ta-lib
+      - appdaemon
+      - hassapi
