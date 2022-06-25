@@ -262,11 +262,22 @@ sensor:
         friendly_name: "total W"
         unit_of_measurement: "W"
         value_template: >
-             {{ (states('sensor.microwav_w') | float + 
+             {{ (states('sensor.powr2_20220206_energy_power') | float +
+                 states('sensor.microwav_w') | float +
                  states('sensor.boiler_w') | float +
                  states('sensor.gr_frigo_w') | float +
                  states('sensor.gr_piastra_w') | float) | 
               round | int }}
+# ATTENZIONE codice non funzionante e scomodissimo al 25.6.2022
+#      home_lux_low_range:
+#        friendly_name: "home lux low range"
+#        unit_of_measurement: "lx"
+#        value_template: >
+#            {% if (states('sensor.home_lux TSL2561 Illuminance') | float) > 5000 %}
+#                5000.0
+#            {% else %}
+#                sensor.home_lux TSL2561 Illuminance
+#            {% endif %}
 
 
 switch:
