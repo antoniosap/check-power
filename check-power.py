@@ -13,7 +13,8 @@ import numpy as np
 import talib
 
 logger = logging.getLogger('check-power')
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 TIMEZONE_IOT_OFFSET_HOURS = 1  # evita di cambiare il timezone ad ogni sensore della rete
@@ -43,11 +44,15 @@ TOPIC_PC_POWER = "tele/tasmota_9D1588/SENSOR"
 reading_watt_pc_power = 0
 expire_pc_power_sec = EXPIRE_SEC
 time_watt_pc_power = datetime.now()
+TOPIC_BAGNO_POWER = "tele/tasmota_CEAA9C/SENSOR"
+reading_watt_bagno_power = 0
+expire_bagno_power_sec = EXPIRE_SEC
+time_watt_bagno_power = datetime.now()
 # totals
 total_watt_last = 0
 total_watt = 0
-total_watt_var = 0      # variazione percentuale dall'ultima lettura
-TOTAL_WATT_MAX = 3000   # 3 kilowatt di contratto
+total_watt_var = 0  # variazione percentuale dall'ultima lettura
+TOTAL_WATT_MAX = 3000  # 3 kilowatt di contratto
 # filters
 power_watt_series = np.zeros(10)
 total_watt_last_ema = 0
@@ -55,7 +60,7 @@ total_watt_last_ema = 0
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
-    print("Connected with result code "+str(rc))
+    print("Connected with result code " + str(rc))
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
@@ -63,15 +68,18 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(TOPIC_GR_PIASTRA)  # gr.piastra
     client.subscribe(TOPIC_GR_MICROWAV)  # microwav
     client.subscribe(TOPIC_GR_BOILER)  # boiler
-    client.subscribe(TOPIC_PC_POWER)  # power PC meter
+    client.subscribe(TOPIC_PC_POWER)  # power meter, posiz. pC
+    client.subscribe(TOPIC_BAGNO_POWER)  # power meter, posiz, prese bagno
 
 
 # The callback for when a PUBLISH message is received from the server.
 # ATTENZIONE: l'intera procedura deve durare max 30 secondi
 def on_message(client, userdata, msg):
-    logger.debug(msg.topic+" "+str(msg.payload))
+    logger.debug(msg.topic + " " + str(msg.payload))
     global reading_watt_frigo, reading_watt_piastra, reading_watt_microwav, reading_watt_boiler, reading_watt_pc_power
+    global reading_watt_bagno_power
     global time_watt_frigo, time_watt_piastra, time_watt_microwav, time_watt_boiler, time_watt_pc_power
+    global time_watt_bagno_power
     global total_watt, total_watt_last, total_watt_var, power_watt_series, total_watt_last_ema
 
     now = datetime.now()
@@ -98,6 +106,10 @@ def on_message(client, userdata, msg):
         reading_watt_pc_power = watt
         time_watt_pc_power = t
         logger.debug("pc power W {:d} {}".format(reading_watt_pc_power, time_watt_pc_power))
+    elif msg.topic == TOPIC_BAGNO_POWER:
+        reading_watt_bagno_power = watt
+        time_watt_bagno_power = t
+        logger.debug("bagno prese power W {:d} {}".format(reading_watt_bagno_power, time_watt_bagno_power))
     # scadenza valori
     if (datetime.now() - time_watt_frigo).total_seconds() > EXPIRE_SEC:
         time_watt_frigo = datetime.now()
@@ -114,15 +126,19 @@ def on_message(client, userdata, msg):
     if (datetime.now() - time_watt_pc_power).total_seconds() > EXPIRE_SEC:
         time_watt_pc_power = datetime.now()
         reading_watt_pc_power = 0
+    if (datetime.now() - time_watt_bagno_power).total_seconds() > EXPIRE_SEC:
+        time_watt_bagno_power = datetime.now()
+        reading_watt_bagno_power = 0
     # calcolo
-    total_watt = reading_watt_frigo + reading_watt_piastra + reading_watt_microwav + reading_watt_boiler + reading_watt_pc_power
+    total_watt = reading_watt_frigo + reading_watt_piastra + reading_watt_microwav + reading_watt_boiler + \
+                 reading_watt_pc_power + reading_watt_bagno_power
     total_watt_var = round(-(total_watt_last - total_watt) / TOTAL_WATT_MAX * 100.0, 1)
     total_watt_perc = round(total_watt / TOTAL_WATT_MAX * 100.0, 1)
     power_watt_series = np.delete(power_watt_series, 0)
     power_watt_series = np.append(power_watt_series, total_watt)
     # EMA = exponential moving average
     # FIR filter
-    total_watt_ema = round(talib.EMA(power_watt_series, timeperiod=4)[10-1])
+    total_watt_ema = round(talib.EMA(power_watt_series, timeperiod=4)[10 - 1])
     total_watt_var_ema = round(-(total_watt_last_ema - total_watt_ema) / TOTAL_WATT_MAX * 100.0, 1)
 
     # if total_watt_var > 200:
@@ -139,7 +155,8 @@ def on_message(client, userdata, msg):
         msg = "la potenza sta scendendo al {} percento".format(round(total_watt_perc))
     if msg is not None:
         # tts @ home assistant
-        payload = {"time": now.strftime(TIME_FORMAT), "speech": {"entity_id": HA_CHROMECAST_ID, "language": 'it', "message": msg}}
+        payload = {"time": now.strftime(TIME_FORMAT),
+                   "speech": {"entity_id": HA_CHROMECAST_ID, "language": 'it', "message": msg}}
         client.publish(HA_SERVICE, json.dumps(payload))
 
 
