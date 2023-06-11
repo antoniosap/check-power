@@ -12,4 +12,4 @@ UTILI COMANDI:
 
 * avviare su 'home assistant' con:
 ** docker build -t check-power .
-** docker run -d --rm --name check-power-app check-power
+** docker run -d --name check-power-app check-power
