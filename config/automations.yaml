@@ -1,152 +1,534 @@
-- alias: night lights on
+- id: '1649414990714'
+  alias: luce bagno on PIR bagno
+  description: ''
   trigger:
-    platform: sun
-    event: sunset
+  - platform: state
+    entity_id:
+    - binary_sensor.ewelink_ms01_pir_2_ias_zone
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+    from: 'off'
+  condition: []
   action:
   - service: switch.turn_on
-    entity_id: switch.lampada_lettura
-  id: 7e66e6c032c645d2806966d455c12965
-
-- alias: night lights off
+    data: {}
+    target:
+      device_id: 1f3cddcc8003cf0227ffcec9936d6c06
+  - delay:
+      hours: 0
+      minutes: 8
+      seconds: 0
+      milliseconds: 0
+  - service: switch.turn_off
+    data: {}
+    target:
+      device_id: 1f3cddcc8003cf0227ffcec9936d6c06
+  mode: restart
+- id: '1649507911790'
+  alias: night lights on
+  description: ''
   trigger:
-    platform: sun
+  - platform: sun
+    event: sunset
+    offset: 0
+  condition: []
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      device_id: 983fcdb3cf572dd278c0151abd195073
+  mode: single
+- id: '1649508024792'
+  alias: night lights off
+  description: ''
+  trigger:
+  - platform: sun
     event: sunrise
+    offset: 0
+  condition: []
   action:
   - service: switch.turn_off
-    entity_id: switch.lampada_lettura
-  id: b4a2b39e7fc845c09288da8393926bdc
-
-- id: '1595670571853'
-  alias: tts-power
+    data: {}
+    target:
+      device_id: 983fcdb3cf572dd278c0151abd195073
+  mode: single
+- id: '1649509312041'
+  alias: boiler timer on
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: switch.boiler
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+  condition: []
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.boiler
+  - delay:
+      hours: 0
+      minutes: 40
+      seconds: 0
+      milliseconds: 0
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.boiler
+  mode: single
+- id: '1649513161038'
+  alias: boiler on at morning feriale
+  description: ''
+  trigger:
+  - platform: time
+    at: 04:40:00
+  condition:
+  - condition: time
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    before: 00:00:00
+  action:
+  - service: automation.trigger
+    data: {}
+    target:
+      entity_id: automation.boiler_timer_on
+  mode: single
+- id: '1649576422926'
+  alias: cong temp alarm
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.tasmota_si7021_temperature
+    above: '-9'
+  condition: []
+  action:
+  - service: tts.google_translate_say
+    data:
+      language: it
+      cache: true
+      entity_id: media_player.entryway
+      message: attenzione. congelatore in allarme.
+  mode: single
+- id: '1649576633993'
+  alias: lab light off
+  description: ''
+  trigger:
+  - platform: time
+    at: '22:00:00'
+  condition: []
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.tasmota
+  mode: single
+- id: '1649576777163'
+  alias: luce cucina off
+  description: ''
+  trigger:
+  - platform: time
+    at: '22:30:00'
+  condition: []
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.socket2
+  mode: single
+- id: '1649576846684'
+  alias: luce cucina on
+  description: ''
+  trigger:
+  - platform: time
+    at: 08:00:00
+  condition: []
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.socket2
+  mode: single
+- id: '1650044188238'
+  alias: lab light on
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunset
+    offset: 0
+  condition: []
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.tasmota
+  mode: single
+- id: '1650101234572'
+  alias: tts-power-google
   description: ''
   trigger:
   - platform: mqtt
     topic: ha/tts/google_translate_say
   condition: []
   action:
-    - service: tts.google_translate_say
-      data_template:
-        entity_id: "{{ trigger.payload_json['speech']['entity_id'] }}"
-        language: "{{ trigger.payload_json['speech']['language'] }}"
-        message: "{{ trigger.payload_json['speech']['message'] }}"
-
-- id: "boiler_timer_on_20200815"
-  alias: boiler timer on
-  description: ''
-  trigger:
-  - entity_id: switch.boiler
-    for: 00:40:00
-    platform: state
-    to: 'on'
-  action:
-  - entity_id: switch.boiler
-    service: switch.turn_off
-- id: cong_temp_alarm_20200816
-  alias: cong temp alarm
-  description: controlla se la cella frigorifera non raffredda
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.cong
-    above: -9.0
-  action:
   - service: tts.google_translate_say
     data_template:
-      entity_id: media_player.entryway
-      language: it
-      message: Attenzione ! il congelatore è spento ed è in allarme
-- id: morning_boiler_20200817
-  alias: boiler on at morning
-  description: accende il boiler al mattino presto
+      entity_id: '{{ trigger.payload_json[''speech''][''entity_id''] }}'
+      language: '{{ trigger.payload_json[''speech''][''language''] }}'
+      message: '{{ trigger.payload_json[''speech''][''message''] }}'
+      cache: true
+  mode: single
+- id: '1650136919274'
+  alias: luce frigo on
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.pir_bagno
+    to: 'on'
+  condition:
+  - condition: sun
+    after: sunset
+  - condition: time
+    before: '22:00:00'
+    after: 00:00:00
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.tasmota_3
+  - delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+      milliseconds: 0
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.tasmota_3
+  mode: single
+- id: '1650288031435'
+  alias: zanzariera on evening
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunset
+  condition: []
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.socket1
+  - delay:
+      hours: 2
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+    enabled: false
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.socket1
+    enabled: false
+  mode: single
+- id: '1650477994928'
+  alias: ingresso light on PIR ingresso
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: 4380d5a303f04b61b8814a3e471b26b0
+    entity_id: binary_sensor.ewelink_ms01_pir_ias_zone
+    domain: binary_sensor
+  condition: []
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.tasmota_4
+  mode: single
+- id: '1650571196987'
+  alias: zanzariera safe off
+  description: ''
+  trigger:
+  - platform: time
+    at: '23:00:00'
+  condition: []
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.socket1
+  mode: single
+- id: '1650650854787'
+  alias: ingresso light off
+  description: ''
+  trigger:
+  - type: no_motion
+    platform: device
+    device_id: 4380d5a303f04b61b8814a3e471b26b0
+    entity_id: binary_sensor.ewelink_ms01_pir_ias_zone
+    domain: binary_sensor
+  condition: []
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id:
+      - switch.tasmota_4
+      - switch.tasmota_3
+      - switch.tasmota_7
+  mode: single
+- id: '1650739841177'
+  alias: boiler on at morning festivo
+  description: ''
   trigger:
   - platform: time
     at: 07:00:00
+  condition:
+  - condition: time
+    weekday:
+    - sat
+    - sun
+  action:
+  - service: automation.trigger
+    data: {}
+    target:
+      entity_id: automation.boiler_timer_on
+  mode: single
+- id: '1654884505562'
+  alias: ventilatore off
+  description: ''
+  trigger:
+  - platform: time
+    at: '22:00:00'
+  - platform: time
+    at: 06:40:00
+  condition:
+  - condition: time
+    before: 08:00:00
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    after: 00:00:00
+    enabled: false
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.tasmota_5
+  mode: single
+- id: '1655404977639'
+  alias: ventilatore on as evening
+  description: ''
+  trigger:
+  - platform: time
+    at: '18:50:00'
+  condition:
+  - type: is_temperature
+    condition: device
+    device_id: a38f60c41fad315191ad5e51baddced1
+    entity_id: sensor.ewelink_th01_b0071325_temperature
+    domain: sensor
+    above: 25
   action:
   - service: switch.turn_on
-    entity_id: switch.boiler
-- id: '1597819488092'
-  alias: ventola troppo caldo
+    data: {}
+    target:
+      entity_id: switch.tasmota_5
+  mode: single
+- id: '1665209643936'
+  alias: cucina light on PIR ingresso
   description: ''
   trigger:
-  - entity_id: person.antonio
-    platform: state
-    to: home
+  - type: motion
+    platform: device
+    device_id: 4380d5a303f04b61b8814a3e471b26b0
+    entity_id: binary_sensor.ewelink_ms01_pir_ias_zone
+    domain: binary_sensor
   condition:
-  - above: '27.3'
-    condition: numeric_state
-    entity_id: switch.termo_lab
+  - type: is_illuminance
+    condition: device
+    device_id: 7d680a7b40f7e69048fe8f03fa931a58
+    entity_id: sensor.home_lux_tsl2561_illuminance
+    domain: sensor
+    below: 700
   action:
-  - data: {}
-    entity_id: switch.vent
-    service: switch.toggle
-- id: boiler_proximity_20200819
-  alias: boiler proximity
+  - type: turn_on
+    device_id: d906c92c7fb296fab7e3024bf5fcba50
+    entity_id: switch.tasmota_8
+    domain: switch
+  - delay:
+      hours: 0
+      minutes: 3
+      seconds: 0
+      milliseconds: 0
+  - type: turn_off
+    device_id: d906c92c7fb296fab7e3024bf5fcba50
+    entity_id: switch.tasmota_8
+    domain: switch
+  mode: single
+- id: '1673766857553'
+  alias: night lights off safe
   description: ''
   trigger:
-  - below: '1300'
-    entity_id: proximity.home
-    platform: numeric_state
+  - platform: time
+    at: 08:30:00
+  condition: []
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      device_id: 983fcdb3cf572dd278c0151abd195073
+  mode: single
+- id: '1677393708632'
+  alias: Button WB02
+  description: ''
+  use_blueprint:
+    path: homeassistant/sonoff_snzb01_wireless_switch_zha.yaml
+    input:
+      switch: 67c230231910abb55114e23b0867a18a
+      single_press:
+      - service: switch.turn_on
+        data: {}
+        target:
+          device_id: 6d2e02f3ec8a6349cdf3379dd13d3eb2
+          entity_id:
+          - switch.th10_1
+          - switch.tasmota_7
+          - switch.tasmota_8
+      double_press:
+      - service: switch.turn_off
+        data: {}
+        target:
+          device_id:
+          - 6d2e02f3ec8a6349cdf3379dd13d3eb2
+          entity_id:
+          - switch.tasmota_7
+          - switch.tasmota_8
+          - switch.th10_1
+- id: '1677524073929'
+  alias: ingresso open lights on
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.ewelink_ds01_iaszone
+    from: 'off'
+    to: 'on'
   condition:
-  - condition: template
-    value_template: '{{ states.proximity.home.attributes.dir_of_travel == "towards"
-      }}'
+  - condition: time
+    after: '18:00:00'
+    before: '23:59:59'
   action:
-  - data: {}
-    entity_id: switch.boiler
-    service: switch.turn_on
-  - data:
-      message: stai arrivando a casa, accendo il boiler
-    service: telegram_bot.send_message
-
-- id: '1598130003086'
-  alias: away home off
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id:
+      - switch.tasmota_4
+      - switch.tasmota_3
+      - switch.th10_1
+      - switch.tasmota_7
+  mode: single
+- id: '1677952148499'
+  alias: Button WB01
+  description: ''
+  use_blueprint:
+    path: homeassistant/sonoff_snzb01_wireless_switch_zha.yaml
+    input:
+      switch: 38c904928ca0c4e6c5367d4fdd692592
+      single_press:
+      - service: switch.toggle
+        data: {}
+        target:
+          entity_id: switch.boiler
+- id: '1679236225567'
+  alias: presenza in cucina
   description: ''
   trigger:
-  - entity_id: person.antonio
-    from: home
-    platform: state
-    to: not_home
+  - platform: state
+    entity_id:
+    - binary_sensor.ewelink_ms01_pir_2_ias_zone
+    from: 'off'
+    to: 'on'
   condition: []
   action:
-  - data: {}
-    entity_id: switch.vent
-    service: switch.turn_off
-  - data: {}
-    entity_id: switch.corridoio
-    service: switch.turn_off
-- id: away_home_on_20200824
-  alias: away home on
+  - service: switch.turn_off
+    data: {}
+    target:
+      device_id: 1f3cddcc8003cf0227ffcec9936d6c06
+  mode: single
+- id: '1680978413724'
+  alias: m5stack-values
   description: ''
   trigger:
-  - below: '1000'
-    entity_id: proximity.home
-    platform: numeric_state
+  - platform: state
+    entity_id:
+    - sensor.ewelink_th01_b0071325_temperature
+  - platform: state
+    entity_id:
+    - sensor.ewelink_th01_b0071325_humidity
+  - platform: state
+    entity_id:
+    - sensor.ewelink_th01_b0071325_power
   condition: []
   action:
-  - data: {}
-    entity_id: switch.vent
-    service: switch.turn_on
-  - data: {}
-    entity_id: switch.corridoio
-    service: switch.turn_on
-- id: '1603984670728'
-  alias: luce cucina on
+  - service: mqtt.publish
+    data:
+      qos: '0'
+      retain: false
+      topic: m5stack-values
+      payload: '{% set tc_ext = states("sensor.ewelink_th01_b0071325_temperature")
+        %} {% set hr_ext = states("sensor.ewelink_th01_b0071325_humidity") %} {% set
+        bat_ext = states("sensor.ewelink_th01_b0071325_power") %} { "tc_ext": {{ tc_ext
+        }}, "hr_ext": {{ hr_ext }}, "bat_ext": {{ bat_ext }} } '
+  mode: single
+- id: '1681062522680'
+  alias: m5stack-btn-C
   description: ''
   trigger:
-  - at: 08:00:00
-    platform: time
+  - platform: mqtt
+    topic: m5stack-btn
+    payload: C
   condition: []
   action:
-  - data: {}
-    entity_id: switch.vent
-    service: switch.turn_on
-- id: '1603984752481'
-  alias: luce cucina off
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.boiler
+  - delay:
+      hours: 0
+      minutes: 40
+      seconds: 0
+      milliseconds: 0
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.boiler
+  mode: restart
+- id: '1687078315550'
+  alias: tts-power-mpd
   description: ''
   trigger:
-  - at: '22:30:00'
-    platform: time
+  - platform: mqtt
+    topic: ha/tts/picotts_say
   condition: []
   action:
-  - data: {}
-    entity_id: switch.vent
-    service: switch.turn_off
+  - service: tts.picotts_say
+    data_template:
+      entity_id: '{{ trigger.payload_json[''speech''][''entity_id''] }}'
+      language: '{{ trigger.payload_json[''speech''][''language''] }}'
+      message: '{{ trigger.payload_json[''speech''][''message''] }}'
+      cache: true
+  mode: single

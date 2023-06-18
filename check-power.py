@@ -19,8 +19,8 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO,
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 TIMEZONE_IOT_OFFSET_HOURS = 1  # evita di cambiare il timezone ad ogni sensore della rete
 EXPIRE_SEC = 45
-HA_CHROMECAST_ID = "media_player.entryway"
-HA_SERVICE = "ha/tts/google_translate_say"
+HA_MEDIA_PLAYER_ID = "media_player.mpd"
+HA_SERVICE = "ha/tts/picotts_say"
 MESSAGE_EMA_LEVEL = 16
 
 # measure
@@ -156,7 +156,7 @@ def on_message(client, userdata, msg):
     if msg is not None:
         # tts @ home assistant
         payload = {"time": now.strftime(TIME_FORMAT),
-                   "speech": {"entity_id": HA_CHROMECAST_ID, "language": 'it', "message": msg}}
+                   "speech": {"entity_id": HA_MEDIA_PLAYER_ID, "language": 'it-IT', "message": msg}}
         client.publish(HA_SERVICE, json.dumps(payload))
 
 
