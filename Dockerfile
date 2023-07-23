@@ -1,7 +1,7 @@
 #
-# avviare su 'home assistant' con:
+# avviare con:
 # docker build -t check-power .
-# docker run -d --restart=always --name check-power-app check-power
+# docker run -d --restart=always --name check-power-app -e HA_MEDIA_PLAYER_ID="media_player.mopidy" -e HA_TTS_SERVICE_TOPIC="ha/tts/picotts_say" check-power
 #
 #
 FROM alpine:3.16
@@ -35,4 +35,6 @@ RUN apk del gcc make py3-pip bash cmake g++ gfortran musl-dev linux-headers sed
 # test app docker banner
 # CMD ["python3", "app.py"]
 # production app
-CMD ["python3", "check-power.py"]
+ENV HA_MEDIA_PLAYER_ID="media_player.mopidy"
+ENV HA_TTS_SERVICE_TOPIC="ha/tts/picotts_say"
+CMD "python3" "check-power.py" "--HA_MEDIA_PLAYER_ID" ${HA_MEDIA_PLAYER_ID} "--HA_TTS_SERVICE_TOPIC" ${HA_TTS_SERVICE_TOPIC}

@@ -11,6 +11,7 @@ import sys
 import paho.mqtt.client as mqtt
 import numpy as np
 import talib
+import argparse
 
 logger = logging.getLogger('check-power')
 logging.basicConfig(stream=sys.stdout, level=logging.INFO,
@@ -19,8 +20,6 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO,
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 TIMEZONE_IOT_OFFSET_HOURS = 1  # evita di cambiare il timezone ad ogni sensore della rete
 EXPIRE_SEC = 45
-HA_MEDIA_PLAYER_ID = "media_player.mopidy"
-HA_SERVICE = "ha/tts/picotts_say"
 MESSAGE_EMA_LEVEL = 16
 
 # measure
@@ -156,9 +155,18 @@ def on_message(client, userdata, msg):
     if msg is not None:
         # tts @ home assistant
         payload = {"time": now.strftime(TIME_FORMAT),
-                   "speech": {"entity_id": HA_MEDIA_PLAYER_ID, "language": 'it-IT', "message": msg}}
-        client.publish(HA_SERVICE, json.dumps(payload))
+                   "speech": {"entity_id": args.HA_MEDIA_PLAYER_ID, "language": 'it-IT', "message": msg}}
+        client.publish(args.HA_TTS_SERVICE_TOPIC, json.dumps(payload))
 
+
+parser = argparse.ArgumentParser(
+                    prog='check-power',
+                    description='get power meters value and filter readings')
+parser.add_argument('--HA_MEDIA_PLAYER_ID', default="media_player.mopidy")
+parser.add_argument('--HA_TTS_SERVICE_TOPIC', default="ha/tts/picotts_say")
+args = parser.parse_args()
+print(f"HA_MEDIA_PLAYER_ID: {args.HA_MEDIA_PLAYER_ID}")
+print(f"HA_TTS_SERVICE_TOPIC: {args.HA_TTS_SERVICE_TOPIC}")
 
 client = mqtt.Client()
 client.on_connect = on_connect
