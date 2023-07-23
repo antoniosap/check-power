@@ -1,15 +1,28 @@
-ATTENZIONE:
-
-dal 16.4.2022 col nuovo integrato home assistant,
-rimane valida solo la parte check-power a 5 power meter
-
-
 UTILI COMANDI:
 
 * per docker desktop
 ** docker compose up -d --build
 ** gremlin attach check-power-app-1
 
-* avviare su 'home assistant' con:
+* avviare con:
 ** docker build -t check-power .
-** docker run -d --name check-power-app check-power
+** docker run -d --restart always --name check-power-app check-power
+
+MOPIDY IP: 192.168.147.184
+
+MOPIDY AUDIO TEST:
+docker run --name mopidy-audiotest \
+    --user root --device /dev/snd \
+    wernight/mopidy \
+    gst-launch-1.0 audiotestsrc ! audioresample ! autoaudiosink
+
+MOPIDY RUN:
+docker run -d --name mopidy \
+    --user root --device /dev/snd \
+    -p 6600:6600 -p 6680:6680 \
+    --user $UID:$GID \
+    wernight/mopidy \
+    mopidy \
+    -o spotify/enabled=false \
+    -o gmusic/enabled=false \
+    -o soundcloud/enabled=false

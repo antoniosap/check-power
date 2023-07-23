@@ -210,11 +210,13 @@ sensor:
             {% endif %}
 
 #
-#
+# esterno su NUC docker
 #
 media_player:
   - platform: mpd
-    host: 192.168.147.15
+    host: 192.168.147.184
+    port: 6600
+    name: "mopidy"
     scan_interval: 1
 
 #

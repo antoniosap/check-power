@@ -19,7 +19,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO,
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 TIMEZONE_IOT_OFFSET_HOURS = 1  # evita di cambiare il timezone ad ogni sensore della rete
 EXPIRE_SEC = 45
-HA_MEDIA_PLAYER_ID = "media_player.mpd"
+HA_MEDIA_PLAYER_ID = "media_player.mopidy"
 HA_SERVICE = "ha/tts/picotts_say"
 MESSAGE_EMA_LEVEL = 16
 
