@@ -8,7 +8,7 @@ UTILI COMANDI:
 ** docker build -t check-power .
 ** docker run -d --restart always --name check-power-app check-power
 
-MOPIDY IP: 192.168.147.184
+MOPIDY IP: 192.168.147.2 (nb: static ip)
 
 MOPIDY AUDIO TEST:
 docker run --name mopidy-audiotest \
@@ -19,6 +19,9 @@ docker run --name mopidy-audiotest \
 MOPIDY RUN:
 docker run -d --name mopidy \
     --user root --device /dev/snd \
+    -v "$PWD/media:/var/lib/mopidy/media:ro" \
+    -v "$PWD/local:/var/lib/mopidy/local" \
+    -v "$PWD/playlists:/var/lib/mopidy/playlists" \
     -p 6600:6600 -p 6680:6680 \
     --user $UID:$GID \
     wernight/mopidy \
