@@ -1,22 +1,26 @@
-UTILI COMANDI:
+### UTILI COMANDI
 
-* per docker desktop
-** docker compose up -d --build
-** gremlin attach check-power-app-1
+- per docker desktop
+  - docker compose up -d --build
+  - gremlin attach check-power-app-1
 
-* avviare con:
-** docker build -t check-power .
-** docker run -d --restart always --name check-power-app check-power
+- avviare con:
+  - docker build -t check-power .
+  - docker run -d --restart=always --name check-power-app-2 -e HA_MEDIA_PLAYER_ID="media_player.mopidy" -e HA_TTS_SERVICE_TOPIC="ha/tts/picotts_say" check-power
 
-MOPIDY IP: 192.168.147.2 (nb: static ip)
+- notes:
+  - la configurazione delle versioni dei requirements è critica
 
-MOPIDY AUDIO TEST:
+### MOPIDY 
+IP: 192.168.147.2 (nb: static ip)
+
+### MOPIDY AUDIO TEST
 docker run --name mopidy-audiotest \
     --user root --device /dev/snd \
     wernight/mopidy \
     gst-launch-1.0 audiotestsrc ! audioresample ! autoaudiosink
 
-MOPIDY RUN:
+### MOPIDY RUN
 docker run -d --name mopidy \
     --user root --device /dev/snd \
     -v "$PWD/media:/var/lib/mopidy/media:ro" \

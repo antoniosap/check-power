@@ -1,7 +1,7 @@
 #
 #
 # MONITOR MQTT:
-# mosquitto_sub -h 192.168.147.1 -t ha/tts/google_translate_say
+# mosquitto_sub -h 192.168.147.1 -t ha/tts/picotts_say
 #
 
 import json
@@ -22,7 +22,7 @@ TIMEZONE_IOT_OFFSET_HOURS = 1  # evita di cambiare il timezone ad ogni sensore d
 EXPIRE_SEC = 45
 MESSAGE_EMA_LEVEL = 16
 
-# measure
+# power meter measure
 TOPIC_GR_FRIGO = "tele/tasmota_6835DF/SENSOR"
 reading_watt_frigo = 0
 expire_frigo_sec = EXPIRE_SEC
@@ -55,9 +55,18 @@ TOTAL_WATT_MAX = 3000  # 3 kilowatt di contratto
 # filters
 power_watt_series = np.zeros(10)
 total_watt_last_ema = 0
+# external lux meter
+TOPIC_EXTERNAL_LUX_METER = "tele/tasmota_A6C75F/SENSOR"
+lux_check_points = [0, 1, 2, 5, 7.5, 10, 20, 30, 40, 50, 100, 200, 500, 750, 1000, 2000, 5000, 7500, 10000, 20000, 50000]
+lux_check_points_hist_min = [x - (x * 10 / 100.0) for x in lux_check_points]
+lux_check_points_hist_max = [x + (x * 10 / 100.0) for x in lux_check_points]
+lux_check_points_last = -1
 
 
+#
+# power meter measure
 # The callback for when the client receives a CONNACK response from the server.
+#
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code " + str(rc))
 
@@ -69,6 +78,8 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(TOPIC_GR_BOILER)  # boiler
     client.subscribe(TOPIC_PC_POWER)  # power meter, posiz. pC
     client.subscribe(TOPIC_BAGNO_POWER)  # power meter, posiz, prese bagno
+    # external lux meter
+    client.subscribe(TOPIC_EXTERNAL_LUX_METER)
 
 
 # The callback for when a PUBLISH message is received from the server.
@@ -80,88 +91,110 @@ def on_message(client, userdata, msg):
     global time_watt_frigo, time_watt_piastra, time_watt_microwav, time_watt_boiler, time_watt_pc_power
     global time_watt_bagno_power
     global total_watt, total_watt_last, total_watt_var, power_watt_series, total_watt_last_ema
+    global lux_check_points_last
 
     now = datetime.now()
     value = json.loads(msg.payload)
-    watt = value["ENERGY"]["Power"]
-    t = datetime.strptime(value["Time"], TIME_FORMAT) + timedelta(hours=TIMEZONE_IOT_OFFSET_HOURS)
-    if msg.topic == TOPIC_GR_FRIGO:
-        reading_watt_frigo = watt
-        time_watt_frigo = t
-        logger.debug("frigo  W {:d} {}".format(reading_watt_frigo, time_watt_frigo))
-    elif msg.topic == TOPIC_GR_PIASTRA:
-        reading_watt_piastra = watt
-        time_watt_piastra = t
-        logger.debug("piastr W {:d} {}".format(reading_watt_piastra, time_watt_piastra))
-    elif msg.topic == TOPIC_GR_MICROWAV:
-        reading_watt_microwav = watt
-        time_watt_microwav = t
-        logger.debug("microw W {:d} {}".format(reading_watt_microwav, time_watt_microwav))
-    elif msg.topic == TOPIC_GR_BOILER:
-        reading_watt_boiler = watt
-        time_watt_boiler = t
-        logger.debug("boiler W {:d} {}".format(reading_watt_boiler, time_watt_boiler))
-    elif msg.topic == TOPIC_PC_POWER:
-        reading_watt_pc_power = watt
-        time_watt_pc_power = t
-        logger.debug("pc power W {:d} {}".format(reading_watt_pc_power, time_watt_pc_power))
-    elif msg.topic == TOPIC_BAGNO_POWER:
-        reading_watt_bagno_power = watt
-        time_watt_bagno_power = t
-        logger.debug("bagno prese power W {:d} {}".format(reading_watt_bagno_power, time_watt_bagno_power))
-    # scadenza valori
-    if (datetime.now() - time_watt_frigo).total_seconds() > EXPIRE_SEC:
-        time_watt_frigo = datetime.now()
-        reading_watt_frigo = 0
-    if (datetime.now() - time_watt_piastra).total_seconds() > EXPIRE_SEC:
-        time_watt_piastra = datetime.now()
-        reading_watt_piastra = 0
-    if (datetime.now() - time_watt_microwav).total_seconds() > EXPIRE_SEC:
-        time_watt_microwav = datetime.now()
-        reading_watt_microwav = 0
-    if (datetime.now() - time_watt_boiler).total_seconds() > EXPIRE_SEC:
-        time_watt_boiler = datetime.now()
-        reading_watt_boiler = 0
-    if (datetime.now() - time_watt_pc_power).total_seconds() > EXPIRE_SEC:
-        time_watt_pc_power = datetime.now()
-        reading_watt_pc_power = 0
-    if (datetime.now() - time_watt_bagno_power).total_seconds() > EXPIRE_SEC:
-        time_watt_bagno_power = datetime.now()
-        reading_watt_bagno_power = 0
-    # calcolo
-    total_watt = reading_watt_frigo + reading_watt_piastra + reading_watt_microwav + reading_watt_boiler + \
-                 reading_watt_pc_power + reading_watt_bagno_power
-    total_watt_var = round(-(total_watt_last - total_watt) / TOTAL_WATT_MAX * 100.0, 1)
-    total_watt_perc = round(total_watt / TOTAL_WATT_MAX * 100.0, 1)
-    power_watt_series = np.delete(power_watt_series, 0)
-    power_watt_series = np.append(power_watt_series, total_watt)
-    # EMA = exponential moving average
-    # FIR filter
-    total_watt_ema = round(talib.EMA(power_watt_series, timeperiod=4)[10 - 1])
-    total_watt_var_ema = round(-(total_watt_last_ema - total_watt_ema) / TOTAL_WATT_MAX * 100.0, 1)
 
-    # if total_watt_var > 200:
-    logger.info("total W {:d} var % {} load % {} EMA4 W {} var EMA4 % {}"
-                .format(total_watt, total_watt_var, total_watt_perc, total_watt_ema, total_watt_var_ema))
-    # update
-    total_watt_last = total_watt
-    total_watt_last_ema = total_watt_ema
+    if msg.topic in [TOPIC_GR_FRIGO, TOPIC_GR_PIASTRA, TOPIC_GR_MICROWAV, TOPIC_GR_BOILER,
+                     TOPIC_PC_POWER, TOPIC_BAGNO_POWER]:
+        watt = value["ENERGY"]["Power"]
+        t = datetime.strptime(value["Time"], TIME_FORMAT) + timedelta(hours=TIMEZONE_IOT_OFFSET_HOURS)
+        if msg.topic == TOPIC_GR_FRIGO:
+            reading_watt_frigo = watt
+            time_watt_frigo = t
+            logger.debug("frigo  W {:d} {}".format(reading_watt_frigo, time_watt_frigo))
+        elif msg.topic == TOPIC_GR_PIASTRA:
+            reading_watt_piastra = watt
+            time_watt_piastra = t
+            logger.debug("piastr W {:d} {}".format(reading_watt_piastra, time_watt_piastra))
+        elif msg.topic == TOPIC_GR_MICROWAV:
+            reading_watt_microwav = watt
+            time_watt_microwav = t
+            logger.debug("microw W {:d} {}".format(reading_watt_microwav, time_watt_microwav))
+        elif msg.topic == TOPIC_GR_BOILER:
+            reading_watt_boiler = watt
+            time_watt_boiler = t
+            logger.debug("boiler W {:d} {}".format(reading_watt_boiler, time_watt_boiler))
+        elif msg.topic == TOPIC_PC_POWER:
+            reading_watt_pc_power = watt
+            time_watt_pc_power = t
+            logger.debug("pc power W {:d} {}".format(reading_watt_pc_power, time_watt_pc_power))
+        elif msg.topic == TOPIC_BAGNO_POWER:
+            reading_watt_bagno_power = watt
+            time_watt_bagno_power = t
+            logger.debug("bagno prese power W {:d} {}".format(reading_watt_bagno_power, time_watt_bagno_power))
+        # scadenza valori
+        if (datetime.now() - time_watt_frigo).total_seconds() > EXPIRE_SEC:
+            time_watt_frigo = datetime.now()
+            reading_watt_frigo = 0
+        if (datetime.now() - time_watt_piastra).total_seconds() > EXPIRE_SEC:
+            time_watt_piastra = datetime.now()
+            reading_watt_piastra = 0
+        if (datetime.now() - time_watt_microwav).total_seconds() > EXPIRE_SEC:
+            time_watt_microwav = datetime.now()
+            reading_watt_microwav = 0
+        if (datetime.now() - time_watt_boiler).total_seconds() > EXPIRE_SEC:
+            time_watt_boiler = datetime.now()
+            reading_watt_boiler = 0
+        if (datetime.now() - time_watt_pc_power).total_seconds() > EXPIRE_SEC:
+            time_watt_pc_power = datetime.now()
+            reading_watt_pc_power = 0
+        if (datetime.now() - time_watt_bagno_power).total_seconds() > EXPIRE_SEC:
+            time_watt_bagno_power = datetime.now()
+            reading_watt_bagno_power = 0
+        # calcolo
+        total_watt = reading_watt_frigo + reading_watt_piastra + reading_watt_microwav + reading_watt_boiler + \
+                     reading_watt_pc_power + reading_watt_bagno_power
+        total_watt_var = round(-(total_watt_last - total_watt) / TOTAL_WATT_MAX * 100.0, 1)
+        total_watt_perc = round(total_watt / TOTAL_WATT_MAX * 100.0, 1)
+        power_watt_series = np.delete(power_watt_series, 0)
+        power_watt_series = np.append(power_watt_series, total_watt)
+        # EMA = exponential moving average
+        # FIR filter
+        total_watt_ema = round(talib.EMA(power_watt_series, timeperiod=4)[10 - 1])
+        total_watt_var_ema = round(-(total_watt_last_ema - total_watt_ema) / TOTAL_WATT_MAX * 100.0, 1)
 
-    msg = None
-    if total_watt_var_ema > MESSAGE_EMA_LEVEL:
-        msg = "la potenza sta salendo al {} percento".format(round(total_watt_perc))
-    if total_watt_var_ema < -MESSAGE_EMA_LEVEL:
-        msg = "la potenza sta scendendo al {} percento".format(round(total_watt_perc))
-    if msg is not None:
-        # tts @ home assistant
-        payload = {"time": now.strftime(TIME_FORMAT),
-                   "speech": {"entity_id": args.HA_MEDIA_PLAYER_ID, "language": 'it-IT', "message": msg}}
-        client.publish(args.HA_TTS_SERVICE_TOPIC, json.dumps(payload))
+        # if total_watt_var > 200:
+        logger.info("total W {:d} var % {} load % {} EMA4 W {} var EMA4 % {}"
+                    .format(total_watt, total_watt_var, total_watt_perc, total_watt_ema, total_watt_var_ema))
+        # update
+        total_watt_last = total_watt
+        total_watt_last_ema = total_watt_ema
+
+        message = None
+        if total_watt_var_ema > MESSAGE_EMA_LEVEL:
+            message = "la potenza sta salendo al {} percento".format(round(total_watt_perc))
+        if total_watt_var_ema < -MESSAGE_EMA_LEVEL:
+            message = "la potenza sta scendendo al {} percento".format(round(total_watt_perc))
+        if message is not None:
+            # tts @ home assistant
+            payload = {"time": now.strftime(TIME_FORMAT),
+                       "speech": {"entity_id": args.HA_MEDIA_PLAYER_ID, "language": 'it-IT', "message": message}}
+            client.publish(args.HA_TTS_SERVICE_TOPIC, json.dumps(payload))
+    if msg.topic in [TOPIC_EXTERNAL_LUX_METER]:
+        lux = value["TSL2561"]["Illuminance"]
+        logger.info(f"lux meter: {lux} last: {lux_check_points_last}")
+        message = None
+        for i, v in enumerate(lux_check_points):
+            if lux_check_points_hist_min[i] <= lux <= lux_check_points_hist_max[i]:
+                if lux_check_points_last != v:
+                    lux_check_points_last = v
+                    if v == 0:
+                        message = f"buio"
+                    else:
+                        message = f"luce {int(lux)}"
+                    logger.info(f"lux meter message: {message}")
+        if message is not None:
+            # tts @ home assistant
+            payload = {"time": now.strftime(TIME_FORMAT),
+                       "speech": {"entity_id": args.HA_MEDIA_PLAYER_ID, "language": 'it-IT', "message": message}}
+            client.publish(args.HA_TTS_SERVICE_TOPIC, json.dumps(payload))
 
 
 parser = argparse.ArgumentParser(
-                    prog='check-power',
-                    description='get power meters value and filter readings')
+    prog='check-power',
+    description='get power meters value and filter readings')
 parser.add_argument('--HA_MEDIA_PLAYER_ID', default="media_player.mopidy")
 parser.add_argument('--HA_TTS_SERVICE_TOPIC', default="ha/tts/picotts_say")
 args = parser.parse_args()

@@ -1,7 +1,7 @@
 #
 # avviare con:
 # docker build -t check-power .
-# docker run -d --restart=always --name check-power-app -e HA_MEDIA_PLAYER_ID="media_player.mopidy" -e HA_TTS_SERVICE_TOPIC="ha/tts/picotts_say" check-power
+# docker run -d --restart=always --name check-power-app-2 -e HA_MEDIA_PLAYER_ID="media_player.mopidy" -e HA_TTS_SERVICE_TOPIC="ha/tts/picotts_say" check-power
 #
 #
 FROM alpine:3.16
