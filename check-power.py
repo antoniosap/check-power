@@ -56,6 +56,7 @@ TOTAL_WATT_MAX = 3000  # 3 kilowatt di contratto
 power_watt_series = np.zeros(10)
 total_watt_last_ema = 0
 # external lux meter
+ENABLE_EXTERNAL_LUX_METER = False
 TOPIC_EXTERNAL_LUX_METER = "tele/tasmota_A6C75F/SENSOR"
 lux_check_points = [0, 1, 2, 5, 7.5, 10, 20, 30, 40, 50, 100, 200, 500, 750, 1000, 2000, 5000, 7500, 10000, 20000, 50000]
 lux_check_points_hist_min = [x - (x * 10 / 100.0) for x in lux_check_points]
@@ -79,7 +80,8 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(TOPIC_PC_POWER)  # power meter, posiz. pC
     client.subscribe(TOPIC_BAGNO_POWER)  # power meter, posiz, prese bagno
     # external lux meter
-    client.subscribe(TOPIC_EXTERNAL_LUX_METER)
+    if ENABLE_EXTERNAL_LUX_METER:
+        client.subscribe(TOPIC_EXTERNAL_LUX_METER)
 
 
 # The callback for when a PUBLISH message is received from the server.
@@ -172,7 +174,7 @@ def on_message(client, userdata, msg):
             payload = {"time": now.strftime(TIME_FORMAT),
                        "speech": {"entity_id": args.HA_MEDIA_PLAYER_ID, "language": 'it-IT', "message": message}}
             client.publish(args.HA_TTS_SERVICE_TOPIC, json.dumps(payload))
-    if msg.topic in [TOPIC_EXTERNAL_LUX_METER]:
+    if ENABLE_EXTERNAL_LUX_METER and msg.topic in [TOPIC_EXTERNAL_LUX_METER]:
         lux = value["TSL2561"]["Illuminance"]
         logger.info(f"lux meter: {lux} last: {lux_check_points_last}")
         message = None
