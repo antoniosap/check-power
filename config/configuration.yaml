@@ -71,6 +71,34 @@ mqtt:
       payload_available: "Online"
       payload_not_available: "Offline"
       device_class: temperature
+#
+    - name: "thermo right column 1"
+      state_topic: "tele/tasmota_D02934/SENSOR"
+      value_template: "{{ value_json['DS18B20-1'].Temperature }}"
+      unit_of_measurement: "C"
+      expire_after: 60
+      availability_topic: "tele/tasmota_D02934/LWT"
+      payload_available: "Online"
+      payload_not_available: "Offline"
+      device_class: temperature
+    - name: "thermo right column 2"
+      state_topic: "tele/tasmota_D02934/SENSOR"
+      value_template: "{{ value_json['DS18B20-2'].Temperature }}"
+      unit_of_measurement: "C"
+      expire_after: 60
+      availability_topic: "tele/tasmota_D02934/LWT"
+      payload_available: "Online"
+      payload_not_available: "Offline"
+      device_class: temperature
+#
+    - name: "boiler kWh Day"
+      state_topic: "tele/tasmota_67E683/SENSOR"
+      value_template: '{{ value_json["ENERGY"]["Today"] }}'
+      unit_of_measurement: "kWh"
+      expire_after: 45
+      availability_topic: "tele/tasmota_67E683/LWT"
+      payload_available: "Online"
+      payload_not_available: "Offline"
     - name: "boiler kWh Day"
       state_topic: "tele/tasmota_67E683/SENSOR"
       value_template: '{{ value_json["ENERGY"]["Today"] }}'
