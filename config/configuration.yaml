@@ -254,6 +254,13 @@ sensor:
             {% else %}
                 {{ states('sensor.home_lux_tsl2561_illuminance') | float(0) }}
             {% endif %}
+      thermo_left_column_diff:
+        friendly_name: "thermo left column diff"
+        unit_of_measurement: "C"
+        value_template: >
+          {{ (states('sensor.thermo_left_column_2') | float(0) -
+              states('sensor.thermo_left_column_1') | float(0)) |
+            round(1) }}
       thermo_right_column_diff:
         friendly_name: "thermo right column diff"
         unit_of_measurement: "C"
