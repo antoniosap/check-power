@@ -53,6 +53,19 @@ mqtt:
       qos: 1
       retain: false
   sensor:
+    - name: "home_o3 status"
+      state_topic: "home_o3/RESULT/8065994B3762"
+      value_template: "{{ value_json['status'] }}"
+    - name: "home_o3 O3 meas V"
+      state_topic: "home_o3/RESULT/8065994B3762"
+      value_template: "{{ value_json['o3V'] }}"
+    - name: "home_o3 O3 level V"
+      state_topic: "home_o3/RESULT/8065994B3762"
+      value_template: "{{ value_json['o3Level'] }}"
+    - name: "home_o3 timer S"
+      state_topic: "home_o3/RESULT/8065994B3762"
+      value_template: "{{ value_json['timerS'] }}"
+#
     - name: "thermo left column 1"
       state_topic: "tele/tasmota_D03256/SENSOR"
       value_template: "{{ value_json['DS18B20-1'].Temperature }}"
