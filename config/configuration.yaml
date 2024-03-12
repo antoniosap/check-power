@@ -60,12 +60,15 @@ mqtt:
     - name: "home_o3 O3 meas V"
       state_topic: "home_o3/RESULT/8065994B3762"
       value_template: "{{ value_json['o3V'] }}"
+      device_class: voltage
     - name: "home_o3 O3 level V"
       state_topic: "home_o3/RESULT/8065994B3762"
       value_template: "{{ value_json['o3Level'] }}"
+      device_class: voltage
     - name: "home_o3 timer S"
       state_topic: "home_o3/RESULT/8065994B3762"
       value_template: "{{ value_json['timerS'] }}"
+      device_class: duration
 #
     - name: "thermo left column 1"
       state_topic: "tele/tasmota_D03256/SENSOR"
